@@ -18,14 +18,14 @@ if ((TOKEN == -1) or (RIOT_API_KEY == -1)):
 else:
 	print("Tokens OK!")
 
-# --------------------------------
 
+# -------- CONFIGURATION ---------
 
-SUMMONER_NAME = 'xxxx'
-DISCORD_NAME = 'xxxx'
-REGION = 'xxx1'
-REGION2 = 'xxx'
-CHANNEL = xxx
+SUMMONER_NAME = 'xxxx'      # Summoner name (replace space by %20)
+DISCORD_NAME = 'xxxx'       # Discord name tag
+REGION = 'xxx'              # euw1 / KR / NA1 / EUN1 / BR1 / LA1 / LA2 / OC1 / JP1 / TR1 / RU / PBE1
+REGION2 = 'xxx'             # europe / asia / americas
+CHANNEL = xxx               # ID discord channel
 
 # Bot setup
 intents = Intents.all()
@@ -37,7 +37,7 @@ async def on_ready():
     print(f'We have logged in as {bot.user}')
     bot.loop.create_task(get_last_loss())
 
-
+# Get the summoner puuid
 def get_summoner_puuid():
     summoner_url = f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{SUMMONER_NAME}'
     try:
@@ -54,7 +54,7 @@ def get_summoner_puuid():
         print("La clé 'puuid' n'existe pas dans le dictionnaire summoner_data.")
         return (None)
 
-
+# Get the last match id
 def get_last_match(summoner_puuid):
     matchlist_url = f'https://{REGION2}.api.riotgames.com/lol/match/v5/matches/by-puuid/{summoner_puuid}/ids'
     try:
@@ -65,7 +65,7 @@ def get_last_match(summoner_puuid):
         print(f"Une erreur s'est produite lors de la requête pour la liste des matchs : {e}")
     return match_ids[0]
 
-
+# Get the last loss stats and send a message on discord
 async def get_last_loss():
     summoner_puuid = get_summoner_puuid()
     ctx = bot.get_channel(CHANNEL)
@@ -85,6 +85,7 @@ async def get_last_loss():
                 print(f"Une erreur s'est produite lors de la requête pour le match {match_id} : {e}")
                 continue
 
+            # Check if the match is a ranked game
             mode = None
             if match_data['info']['gameMode'] =="CLASSIC":
                 mode = match_data['info']['gameMode']
@@ -112,6 +113,7 @@ async def get_last_loss():
                         participant_id = participant['participantId']
                         break
 
+                # Get the last loss stats
                 if (participant_id is not None):
                     if (mode == "CLASSIC") and (mached == "MATCHED_GAME"):
                         participant_data = last_loss['info']['participants'][participant_id - 1]
@@ -135,4 +137,5 @@ async def get_last_loss():
             last_match = match_id
         await asyncio.sleep(5)
 
+# Run the bot
 bot.run(TOKEN)
