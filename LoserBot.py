@@ -4,10 +4,23 @@ from discord import Intents
 from discord.ext import commands
 import requests
 import asyncio
+from env_parsing import get_env
 
-# Configuration
-TOKEN = 'xxx'
-RIOT_API_KEY = 'xxx'
+
+# ----- GET TOKENS FROM ENV ------
+tokens = get_env()
+
+BOT_TOKEN = tokens["BOT_TOKEN"]
+RIOT_TOKEN = tokens["RIOT_TOKEN"]
+if ((BOT_TOKEN == -1) or (RIOT_TOKEN == -1)):
+	print("Error getting token...")
+	exit(-1)
+else:
+	print("Tokens OK!")
+
+# --------------------------------
+
+
 SUMMONER_NAME = 'xxx'
 REGION = 'xxx'
 REGION2 = 'xxx'
