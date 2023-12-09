@@ -70,7 +70,7 @@ async def get_last_loss():
     summoner_puuid = get_summoner_puuid()
     ctx = bot.get_channel(CHANNEL)
     print(summoner_puuid)
-    last_match = None
+    last_match = get_last_match(summoner_puuid)
     while True:
         match_id = get_last_match(summoner_puuid)
         if last_match != match_id:
@@ -83,6 +83,14 @@ async def get_last_loss():
             except Exception as e:
                 print(f"Une erreur s'est produite lors de la requête pour le match {match_id} : {e}")
                 continue
+
+            mode = None
+            if match_data['info']['gameMode'] =="CLASSIC":
+                mode = match_data['info']['gameMode']
+
+            mached = None
+            if match_data['info']['gameType'] == "MATCHED_GAME":
+                mached = match_data['info']['gameType']
 
             # Check if the player lost the match
             participant_id = None
@@ -103,20 +111,24 @@ async def get_last_loss():
                         participant_id = participant['participantId']
                         break
 
-                if participant_id is not None:
-                    participant_data = last_loss['info']['participants'][participant_id - 1]
-                    opponent_name = participant_data['summonerName']
-                    game_duration = last_loss['info']['gameDuration'] / 60
-                    game_duration = round(game_duration, 2)
-                    kills = participant_data['kills']
-                    deaths = participant_data['deaths']
-                    assists = participant_data['assists']
-    
-                    await ctx.send(file=discord.File('nerd.gif'))
-                    target_user = discord.utils.get(ctx.guild.members, name="Kao#4761")
-                    if target_user:
-                        await ctx.send(f'{target_user.mention} JUST LOST A GAME, LOSER !')
-                    await ctx.send(f"Joueur : {opponent_name}\nDurée du match : {game_duration} min\nKDA : {kills}/{deaths}/{assists}")
+                if (participant_id is not None):
+                    if (mode == "CLASSIC") and (mached == "MATCHED_GAME"):
+                        participant_data = last_loss['info']['participants'][participant_id - 1]
+                        opponent_name = participant_data['summonerName']
+                        game_duration = last_loss['info']['gameDuration'] / 60
+                        game_duration = round(game_duration, 2)
+                        kills = participant_data['kills']
+                        deaths = participant_data['deaths']
+                        assists = participant_data['assists']
+                        champion = participant_data['championName']
+
+                        await ctx.send(file=discord.File('nerd.gif'))
+                        target_user = discord.utils.get(ctx.guild.members, name="Kao#4761")
+                        if target_user:
+                            await ctx.send(f'{target_user.mention} JUST LOST A RANKED GAME, LOSER !')
+                        else:
+                            await ctx.send(f'KAOSOBO JUST LOST A RANKED GAME, LOSER !')
+                        await ctx.send(f"Player : {opponent_name}\nChampion played : {champion}\nMatch duration : {game_duration} min\nKDA : {kills}/{deaths}/{assists}")
                 else:
                     await ctx.send('Impossible de trouver les statistiques du participant dans le dernier match.')
             last_match = match_id
