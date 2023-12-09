@@ -21,10 +21,11 @@ else:
 # --------------------------------
 
 
-SUMMONER_NAME = 'the%20wall%20is%20blue'
-REGION = 'euw1'
-REGION2 = 'europe'
-CHANNEL = 1182401729493483530
+SUMMONER_NAME = 'xxxx'
+DISCORD_NAME = 'xxxx'
+REGION = 'xxx1'
+REGION2 = 'xxx'
+CHANNEL = xxx
 
 # Bot setup
 intents = Intents.all()
@@ -62,7 +63,6 @@ def get_last_match(summoner_puuid):
         match_ids = matchlist_response.json()
     except Exception as e:
         print(f"Une erreur s'est produite lors de la requête pour la liste des matchs : {e}")
-    print(match_ids[0])
     return match_ids[0]
 
 
@@ -70,6 +70,7 @@ async def get_last_loss():
     summoner_puuid = get_summoner_puuid()
     ctx = bot.get_channel(CHANNEL)
     print(summoner_puuid)
+    print("Loser bot is running")
     last_match = get_last_match(summoner_puuid)
     while True:
         match_id = get_last_match(summoner_puuid)
@@ -123,11 +124,11 @@ async def get_last_loss():
                         champion = participant_data['championName']
 
                         await ctx.send(file=discord.File('nerd.gif'))
-                        target_user = discord.utils.get(ctx.guild.members, name="Kao#4761")
+                        target_user = discord.utils.get(ctx.guild.members, name = DISCORD_NAME)
                         if target_user:
                             await ctx.send(f'{target_user.mention} JUST LOST A RANKED GAME, LOSER !')
                         else:
-                            await ctx.send(f'KAOSOBO JUST LOST A RANKED GAME, LOSER !')
+                            await ctx.send(f'{DISCORD_NAME} JUST LOST A RANKED GAME, LOSER !')
                         await ctx.send(f"Player : {opponent_name}\nChampion played : {champion}\nMatch duration : {game_duration} min\nKDA : {kills}/{deaths}/{assists}")
                 else:
                     await ctx.send('Impossible de trouver les statistiques du participant dans le dernier match.')
