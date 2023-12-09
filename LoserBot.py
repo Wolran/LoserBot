@@ -10,9 +10,9 @@ from env_parsing import get_env
 # ----- GET TOKENS FROM ENV ------
 tokens = get_env()
 
-BOT_TOKEN = tokens["BOT_TOKEN"]
-RIOT_TOKEN = tokens["RIOT_TOKEN"]
-if ((BOT_TOKEN == -1) or (RIOT_TOKEN == -1)):
+TOKEN = tokens["BOT_TOKEN"]
+RIOT_API_KEY = tokens["RIOT_TOKEN"]
+if ((TOKEN == -1) or (RIOT_API_KEY == -1)):
 	print("Error getting token...")
 	exit(-1)
 else:
@@ -21,10 +21,10 @@ else:
 # --------------------------------
 
 
-SUMMONER_NAME = 'xxx'
-REGION = 'xxx'
-REGION2 = 'xxx'
-CHANNEL = 123456789
+SUMMONER_NAME = 'the%20wall%20is%20blue'
+REGION = 'euw1'
+REGION2 = 'europe'
+CHANNEL = 1182401729493483530
 
 # Bot setup
 intents = Intents.all()
@@ -40,7 +40,7 @@ async def on_ready():
 def get_summoner_puuid():
     summoner_url = f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{SUMMONER_NAME}'
     try:
-        summoner_response = requests.get(summoner_url, headers={'X-Riot-Token': RIOT_TOKEN})
+        summoner_response = requests.get(summoner_url, headers={'X-Riot-Token': RIOT_API_KEY})
         summoner_response.raise_for_status()
         summoner_data = summoner_response.json()
     except Exception as e:
@@ -57,11 +57,12 @@ def get_summoner_puuid():
 def get_last_match(summoner_puuid):
     matchlist_url = f'https://{REGION2}.api.riotgames.com/lol/match/v5/matches/by-puuid/{summoner_puuid}/ids'
     try:
-        matchlist_response = requests.get(matchlist_url, headers={'X-Riot-Token': RIOT_TOKEN})
+        matchlist_response = requests.get(matchlist_url, headers={'X-Riot-Token': RIOT_API_KEY})
         matchlist_response.raise_for_status()
         match_ids = matchlist_response.json()
     except Exception as e:
         print(f"Une erreur s'est produite lors de la requête pour la liste des matchs : {e}")
+    print(match_ids[0])
     return match_ids[0]
 
 
@@ -76,7 +77,7 @@ async def get_last_loss():
             last_loss = None
             match_url = f'https://{REGION2}.api.riotgames.com/lol/match/v5/matches/{match_id}'
             try:
-                match_response = requests.get(match_url, headers={'X-Riot-Token': RIOT_TOKEN})
+                match_response = requests.get(match_url, headers={'X-Riot-Token': RIOT_API_KEY})
                 match_response.raise_for_status()
                 match_data = match_response.json()
             except Exception as e:
@@ -110,11 +111,15 @@ async def get_last_loss():
                     kills = participant_data['kills']
                     deaths = participant_data['deaths']
                     assists = participant_data['assists']
-
-                    await ctx.send(f"Votre dernière défaite sur League of Legends :\nJoueur : {opponent_name}\nDurée du match : {game_duration} min\nKDA : {kills}/{deaths}/{assists}")
+    
+                    await ctx.send(file=discord.File('nerd.gif'))
+                    target_user = discord.utils.get(ctx.guild.members, name="Kao#4761")
+                    if target_user:
+                        await ctx.send(f'{target_user.mention} JUST LOST A GAME, LOSER !')
+                    await ctx.send(f"Joueur : {opponent_name}\nDurée du match : {game_duration} min\nKDA : {kills}/{deaths}/{assists}")
                 else:
                     await ctx.send('Impossible de trouver les statistiques du participant dans le dernier match.')
             last_match = match_id
         await asyncio.sleep(5)
 
-bot.run(BOT_TOKEN)
+bot.run(TOKEN)
