@@ -4,10 +4,23 @@ from discord import Intents
 from discord.ext import commands
 import requests
 import asyncio
+from env_parsing import get_env
 
-# Configuration
-TOKEN = 'xxx'
-RIOT_API_KEY = 'xxx'
+
+# ----- GET TOKENS FROM ENV ------
+tokens = get_env()
+
+BOT_TOKEN = tokens["BOT_TOKEN"]
+RIOT_TOKEN = tokens["RIOT_TOKEN"]
+if ((BOT_TOKEN == -1) or (RIOT_TOKEN == -1)):
+	print("Error getting token...")
+	exit(-1)
+else:
+	print("Tokens OK!")
+
+# --------------------------------
+
+
 SUMMONER_NAME = 'xxx'
 REGION = 'xxx'
 REGION2 = 'xxx'
@@ -27,7 +40,7 @@ async def on_ready():
 def get_summoner_puuid():
     summoner_url = f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{SUMMONER_NAME}'
     try:
-        summoner_response = requests.get(summoner_url, headers={'X-Riot-Token': RIOT_API_KEY})
+        summoner_response = requests.get(summoner_url, headers={'X-Riot-Token': RIOT_TOKEN})
         summoner_response.raise_for_status()
         summoner_data = summoner_response.json()
     except Exception as e:
@@ -44,7 +57,7 @@ def get_summoner_puuid():
 def get_last_match(summoner_puuid):
     matchlist_url = f'https://{REGION2}.api.riotgames.com/lol/match/v5/matches/by-puuid/{summoner_puuid}/ids'
     try:
-        matchlist_response = requests.get(matchlist_url, headers={'X-Riot-Token': RIOT_API_KEY})
+        matchlist_response = requests.get(matchlist_url, headers={'X-Riot-Token': RIOT_TOKEN})
         matchlist_response.raise_for_status()
         match_ids = matchlist_response.json()
     except Exception as e:
@@ -63,7 +76,7 @@ async def get_last_loss():
             last_loss = None
             match_url = f'https://{REGION2}.api.riotgames.com/lol/match/v5/matches/{match_id}'
             try:
-                match_response = requests.get(match_url, headers={'X-Riot-Token': RIOT_API_KEY})
+                match_response = requests.get(match_url, headers={'X-Riot-Token': RIOT_TOKEN})
                 match_response.raise_for_status()
                 match_data = match_response.json()
             except Exception as e:
@@ -104,4 +117,4 @@ async def get_last_loss():
             last_match = match_id
         await asyncio.sleep(5)
 
-bot.run(TOKEN)
+bot.run(BOT_TOKEN)
